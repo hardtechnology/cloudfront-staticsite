@@ -25,7 +25,7 @@ Parameters:
   LoggingBucketName:
     Type: String
     Default: ''
-    Description: ""S3 Bucket name for S3 and cloudFront logs
+    Description: "S3 Bucket name for S3 and cloudFront logs"
   ContentBucketName:
     Type: String
     Default: ''
@@ -46,7 +46,7 @@ Resources:
                   HostedZoneId: !Sub "${R53ZoneId}"
         ValidationMethod: DNS
  
-  BlogStorageBucket:
+  StorageBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub "${ContentBucketName}${StackSuffix}"
@@ -60,17 +60,17 @@ Resources:
         BlockPublicPolicy: true
         RestrictPublicBuckets: true
 
-  BlogStorageBucketPolicy:
+  StorageBucketPolicy:
     Type: "AWS::S3::BucketPolicy"
     Properties:
-      Bucket: !Ref BlogStorageBucket
+      Bucket: !Ref StorageBucket
       PolicyDocument:
         Statement:
           -
             Action:
               - 's3:GetObject'
             Effect: Allow
-            Resource: !Sub 'arn:aws:s3:::${BlogStorageBucket}/*'
+            Resource: !Sub 'arn:aws:s3:::${StorageBucket}/*'
             Principal:
               CanonicalUser: !GetAtt CloudFrontAccessIdentity.S3CanonicalUserId
     
@@ -105,7 +105,7 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: !Ref BlogStorageBucket
+        Comment: !Ref StorageBucket
 
   CloudFrontDistribution:
     Type: "AWS::CloudFront::Distribution"
@@ -141,7 +141,7 @@ Resources:
           Prefix: 'CloudFront'
         Origins:
           # yamllint disable-line rule:line-length
-          - DomainName: !GetAtt 'BlogStorageBucket.DomainName'
+          - DomainName: !GetAtt 'StorageBucket.DomainName'
             Id: s3origin
             S3OriginConfig:
               OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CloudFrontAccessIdentity}'
